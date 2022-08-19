@@ -1,101 +1,82 @@
-import { useState } from "react"
+import './App.css';
+import { Note } from './Note.js';
+import { useState } from 'react';
 
-const Persons = ({ persons, filter }) => {
-    return (
-        <div>
-            {persons.filter((person) => {
-                if (filter === '') return true;
-                else {
-                    const nameToLowercase = person.name.toLowerCase()
-                    return nameToLowercase.indexOf(filter) !== -1
 
-                }
-            }).map(person => <p key={person.name}>{person.name} {person.number}</p>)}
-        </div>)
-}
+function App(props) {
+  const [notes, setNotes] = useState(props.notes);
+  const [newNote, setNewNotes] = useState('')
+  const [showAll, setShowAll] = useState(true)
+  /*
+  --Keys
 
-const Filter = ({ setFilter }) => {
+  When we iterate through a list of objects React normally uses keys for 
+  improving the performance of the application. The key usually is 
+  an unique identificator an is a good practice not to use random numbers
+  or index because it can give React problems. 
 
-    const handleFilter = (event) => {
-        const filterToLowerCase = event.target.value.toLowerCase();
-        setFilter(filterToLowerCase)
+  Index fail to this task because if you delete an object of the
+  list the index is out of phase so is not longer a good reference
+  But if you know that the list is immutable, you could use it´
+  to use it map(note,index) => ...
+  
+
+  --Inputs and forms
+  In the event of an input if you search for the value in the target prop 
+  you ll find the text in the input
+  
+  Using forms make us to change the way we where handling the events of the button.
+  By default the last button of a form works as a submit event.
+  If we want to change this behaviour we add in the button tag
+  the prop type with button,  overriding the effect of the form
+  */
+
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    console.log("crear nota")
+    const noteToAddToState = {
+    id: notes.length + 1,
+    content: newNote,
+    date: new Date().toISOString(),
+    important: Math.random() < 0.5
     }
+    console.log(noteToAddToState)
+    
+    //setNotes([...notes,noteToAddToState])
+    setNotes(notes.concat(noteToAddToState))
+    setNewNotes('')
+  }
+  const handleChange = (event) => {
+    setNewNotes(event.target.value)
+    
+  }
 
-    return (
-        <div>
-            <p>
-                filter shown with
-                <input onChange={handleFilter}></input>
-            </p>
-        </div>
-    )
-}
+  const handleShowAll = () => {
+    setShowAll(() => !showAll);
+  }
 
-const PersonForm = ({ persons, setPersons }) => {
-    const [newName, setNewName] = useState('')
-    const [newNumber, setNewNumber] = useState('')
+  /*
+  Remember to use the key in the place where you iterate not on the component
+  */
+  return (
+    <div>
+      <h1>Notes</h1>
+      <button onClick={handleShowAll}> {showAll ? 'Show only important' : 'Show all'}</button>
+      <ul>
+        {notes.filter((note) => {
+          if(showAll === true) return true;
+          return note.important === true
+        }).map((note) => <Note key={note.id} content={note.content} date={note.date}></Note>)}
+      </ul>
 
-    const handleChange = event => setNewName(event.target.value)
-    const handleChangeNumber = event => setNewNumber(event.target.value)
+      <form onSubmit={handleSubmit}>
+        <input type='text' onChange={handleChange} value={newNote}></input>
+        <button>Crear nota</button>
+      </form>
+    </div>
 
-    /*
-    The function 'some' helps as to know if the name already exists
-    This function searchs if in the array is any object with the description
-    callback function 
-    */
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        const newObject = { name: newName, number: newNumber }
-        const isAlreadyExists = persons.some((person) => person.name === newName)
-        if (!isAlreadyExists) {
-            const copy = [...persons, newObject]
-            setPersons(copy);
-        } else {
-            alert(newName + ' is already added to phonebook')
-        }
-        setNewName('')
-        setNewNumber('')
-    }
-    return (
-        <form>
-            <div>
-                name: <input value={newName} onChange={handleChange} />
-                <br></br>
-                number: <input value={newNumber} onChange={handleChangeNumber} />
-            </div>
-            <div>
-                <button type="submit" onClick={handleSubmit} >add</button>
-            </div>
-        </form>
-    )
-}
+  )
 
-
-const App = () => {
-    const [persons, setPersons] = useState([
-        { name: 'Arto Hellas', number: '040-123456' },
-        { name: 'Ada Lovelace', number: '39-44-5323523' },
-        { name: 'Dan Abramov', number: '12-43-234345' },
-        { name: 'Mary Poppendieck', number: '39-23-6423122' }
-    ])
-
-    const [filter, setFilter] = useState('')
-
-
-
-    return (
-        <div>
-            <h2>Phonebook</h2>
-
-            <Filter filter={filter} setFilter={setFilter} />
-
-            <h2>Add a new</h2>
-            <PersonForm persons={persons} setPersons={setPersons} />
-
-            <h2>Numbers</h2>
-            <Persons persons={persons} filter={filter} />
-        </div>
-    )
 }
 
 export default App;
